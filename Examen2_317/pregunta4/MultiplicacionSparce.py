@@ -14,7 +14,6 @@ B = sp.random(n_cols, n_rows, density=density, format='csr')
 # Multiplicación de matrices dispersas
 C = A.dot(B)
 
-# Mostrar el tipo de matriz resultante y algunas estadísticas
 print(f'Tipo de la matriz resultante: {type(C)}')
 print(f'Forma de la matriz resultante: {C.shape}')
 print(f'Número de elementos no cero en la matriz resultante: {C.nnz}')
