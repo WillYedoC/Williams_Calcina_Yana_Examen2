@@ -1,11 +1,8 @@
 import numpy as np
 import scipy.sparse as sp
 
-# Parámetros
 n_rows, n_cols = 1000, 1000  # tamaño de las matrices
 
-# Generar dos matrices dispersas aleatorias
-# Densidad de la matriz (cuánto % de elementos no cero hay en la matriz)
 density = 0.01
 
 # Matriz A
