@@ -1,0 +1,33 @@
+USE master;
+
+CREATE DATABASE school;
+
+GO
+
+USE school;
+
+CREATE TABLE alumno (
+    id_alumno INT PRIMARY KEY IDENTITY(1,1),
+    nombre_completo NVARCHAR(100) NOT NULL,
+    edad INT NOT NULL,
+    grado VARCHAR(20) NOT NULL,
+    grupo VARCHAR(10) NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    tutor VARCHAR(50) NOT NULL,
+    telefono_tutor VARCHAR(20) NOT NULL
+);
+
+INSERT INTO alumno (nombre_completo, edad, grado, grupo, fecha_nacimiento, tutor, telefono_tutor)
+VALUES
+    ('María Pérez González', 26, 'Bachillerato', 'A', '1998-01-02', 'Carlos González', '123456789'),
+    ('Juan López Martínez', 24, 'Bachillerato', 'B', '2000-03-04', 'Ana Martínez', '987654321'),
+    ('Ana Sánchez García', 22, 'Bachillerato', 'C', '2002-05-06', 'Marta García', '345678901'),
+    ('Pedro Rodríguez Flores', 20, 'Bachillerato', 'A', '2004-07-08', 'Antonio Flores', '234567890'),
+    ('Isabel Jiménez Ramírez', 18, 'Bachillerato', 'B', '2006-09-10', 'José Ramírez', '567890123'),
+    ('Carlos Gómez Fernández', 23, 'Bachillerato', 'C', '2001-11-12', 'Ana Fernández', '456789032'),
+    ('Laura Moreno Blanco', 21, 'Bachillerato', 'A', '2003-01-14', 'Javier Blanco', '789012345'),
+    ('David Ortiz López', 19, 'Bachillerato', 'B', '2005-03-16', 'María López', '678901254'),
+    ('Patricia Vázquez Martínez', 25, 'Bachillerato', 'C', '1999-05-18', 'Pedro Martínez', '901234567'),
+    ('Roberto García Pérez', 17, 'Bachillerato', 'A', '2007-07-20', 'Isabel Pérez', '890123476'),
+    ('Andrés Gutiérrez López', 29, 'Universidad', '1º año', '2009-09-22', 'Roberto López', '1234567890'),
+    ('Carolina Herrera Ramírez', 27, 'Universidad', '2º año', '2011-11-24', 'Ana Ramírez', '3456789012');

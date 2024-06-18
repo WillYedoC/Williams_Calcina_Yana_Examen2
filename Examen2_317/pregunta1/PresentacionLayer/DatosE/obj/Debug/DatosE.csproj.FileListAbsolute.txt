@@ -1,0 +1,6 @@
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\DatosE\bin\Debug\DatosE.dll
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\DatosE\bin\Debug\DatosE.pdb
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\DatosE\obj\Debug\DatosE.csproj.AssemblyReference.cache
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\DatosE\obj\Debug\DatosE.csproj.CoreCompileInputs.cache
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\DatosE\obj\Debug\DatosE.dll
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\DatosE\obj\Debug\DatosE.pdb

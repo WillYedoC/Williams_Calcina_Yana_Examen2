@@ -1,0 +1,13 @@
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\bin\Debug\PresentacionLayer.exe.config
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\bin\Debug\PresentacionLayer.exe
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\bin\Debug\PresentacionLayer.pdb
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\bin\Debug\DatosE.dll
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\bin\Debug\DatosE.pdb
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.csproj.AssemblyReference.cache
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.Form1.resources
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.Properties.Resources.resources
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.csproj.GenerateResource.cache
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.csproj.CoreCompileInputs.cache
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\Presenta.9C3C4625.Up2Date
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.exe
+C:\Users\Williams\Desktop\Examen317_2\preg1\PresentacionLayer\PresentacionLayer\obj\Debug\PresentacionLayer.pdb
