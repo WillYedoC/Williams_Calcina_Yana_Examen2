@@ -1,178 +1,136 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include <time.h>
-
-#define MATRIX_SIZE 1000
-#define SPARSITY 0.01 // Porcentaje de elementos no cero
 
 typedef struct {
-    int rows;
-    int cols;
-    int nnz; // number of non-zero elements
-    double *values;
-    int *col_index;
-    int *row_ptr;
+    int *row_ptr; 
+    int *col_ind; 
+    double *values; 
+    int nrows; 
+    int ncols; 
+    int nnz; 
 } CSRMatrix;
 
-CSRMatrix* create_csr_matrix(int rows, int cols, int max_nnz) {
-    CSRMatrix mat = (CSRMatrix) malloc(sizeof(CSRMatrix));
-    mat->rows = rows;
-    mat->cols = cols;
-    mat->nnz = 0; // Initially no non-zero elements
-    mat->values = (double*) malloc(max_nnz * sizeof(double));
-    mat->col_index = (int*) malloc(max_nnz * sizeof(int));
-    mat->row_ptr = (int*) malloc((rows + 1) * sizeof(int));
-    return mat;
-}
-
-void free_csr_matrix(CSRMatrix *mat) {
-    free(mat->values);
-    free(mat->col_index);
-    free(mat->row_ptr);
-    free(mat);
-}
-
-void generate_random_csr_matrix(CSRMatrix *mat, double sparsity) {
-    int max_nnz = mat->rows * mat->cols * sparsity;
-    int nnz = 0;
-    mat->row_ptr[0] = 0;
-
-    for (int i = 0; i < mat->rows; i++) {
-        for (int j = 0; j < mat->cols; j++) {
-            if ((double)rand() / RAND_MAX <= sparsity) {
-                if (nnz >= max_nnz) {
-                    break; // No more elements can be added
-                }
-                mat->values[nnz] = (double)(rand() % 100) / 10.0; // Valor random entre 0.0 y 9.9
-                mat->col_index[nnz] = j;
-                nnz++;
-            }
-        }
-        mat->row_ptr[i + 1] = nnz;
-    }
-    mat->nnz = nnz;
-}
-
-CSRMatrix* multiply_csr_matrices(const CSRMatrix *A, const CSRMatrix *B) {
-    if (A->cols != B->rows) {
-        fprintf(stderr, "Matrix dimensions do not match for multiplication\n");
+CSRMatrix multiplyCSR(const CSRMatrix *A, const CSRMatrix *B) {
+    if (A->ncols != B->nrows) {
+        fprintf(stderr, "Error: Incompatible dimensions for matrix multiplication.\n");
         exit(EXIT_FAILURE);
     }
 
-    int max_nnz = A->nnz * B->nnz;
-    int row_ptr = (int) calloc((A->rows + 1), sizeof(int));
-    int col_index = (int) malloc(max_nnz * sizeof(int));
-    double values = (double) malloc(max_nnz * sizeof(double));
-
+    int *row_ptr = (int *)malloc((A->nrows + 1) * sizeof(int));
+    int *col_ind = NULL;
+    double *values = NULL;
     int nnz = 0;
+
+    row_ptr[0] = 0;
 
     #pragma omp parallel
     {
-        int local_row_ptr = (int) calloc((A->rows + 1), sizeof(int));
-        int local_col_index = (int) malloc(max_nnz * sizeof(int));
-        double local_values = (double) malloc(max_nnz * sizeof(double));
-        int local_nnz = 0;
+        // Variables locales para cada thread
+        int *local_col_ind = (int *)malloc(A->ncols * sizeof(int));
+        double *local_values = (double *)malloc(A->ncols * sizeof(double));
+        int local_nnz;
 
         #pragma omp for schedule(dynamic)
-        for (int i = 0; i < A->rows; i++) {
-            int row_start = A->row_ptr[i];
-            int row_end = A->row_ptr[i + 1];
+        for (int i = 0; i < A->nrows; ++i) {
+            // Inicializar local_col_ind y local_values
+            for (int j = 0; j < A->ncols; ++j) {
+                local_col_ind[j] = -1;
+                local_values[j] = 0.0;
+            }
+            local_nnz = 0;
 
-            for (int j = row_start; j < row_end; j++) {
-                int col_A = A->col_index[j];
-                double val_A = A->values[j];
+            // Multiplicar la fila i de A por la matriz B
+            for (int jj = A->row_ptr[i]; jj < A->row_ptr[i + 1]; ++jj) {
+                int a_col = A->col_ind[jj];
+                double a_val = A->values[jj];
 
-                int col_start = B->row_ptr[col_A];
-                int col_end = B->row_ptr[col_A + 1];
+                for (int kk = B->row_ptr[a_col]; kk < B->row_ptr[a_col + 1]; ++kk) {
+                    int b_col = B->col_ind[kk];
+                    double b_val = B->values[kk];
 
-                for (int k = col_start; k < col_end; k++) {
-                    int col_B = B->col_index[k];
-                    double val_B = B->values[k];
-
-                    local_values[local_nnz] = val_A * val_B;
-                    local_col_index[local_nnz] = col_B;
-                    local_nnz++;
+                    if (local_col_ind[b_col] == -1) {
+                        local_col_ind[b_col] = b_col;
+                        local_values[b_col] = a_val * b_val;
+                        ++local_nnz;
+                    } else {
+                        local_values[b_col] += a_val * b_val;
+                    }
                 }
             }
 
-            local_row_ptr[i + 1] = local_nnz;
+            #pragma omp critical
+            {
+                for (int j = 0; j < A->ncols; ++j) {
+                    if (local_col_ind[j] != -1) {
+                        col_ind = (int *)realloc(col_ind, (nnz + 1) * sizeof(int));
+                        values = (double *)realloc(values, (nnz + 1) * sizeof(double));
+                        col_ind[nnz] = local_col_ind[j];
+                        values[nnz] = local_values[j];
+                        ++nnz;
+                    }
+                }
+                row_ptr[i + 1] = nnz;
+            }
         }
 
-        #pragma omp critical
-        {
-            for (int i = 0; i < A->rows; i++) {
-                row_ptr[i + 1] += local_row_ptr[i + 1];
-            }
-            for (int i = 0; i < local_nnz; i++) {
-                values[nnz + i] = local_values[i];
-                col_index[nnz + i] = local_col_index[i];
-            }
-            nnz += local_nnz;
-        }
-
-        free(local_row_ptr);
-        free(local_col_index);
+        free(local_col_ind);
         free(local_values);
     }
 
-    for (int i = 1; i <= A->rows; i++) {
-        row_ptr[i] += row_ptr[i - 1];
-    }
-
-    CSRMatrix *C = create_csr_matrix(A->rows, B->cols, nnz);
-    C->values = (double*) realloc(values, nnz * sizeof(double));
-    C->col_index = (int*) realloc(col_index, nnz * sizeof(int));
-    C->row_ptr = row_ptr;
-    C->nnz = nnz;
-
+    CSRMatrix C = {row_ptr, col_ind, values, A->nrows, B->ncols, nnz};
     return C;
 }
 
-void print_csr_matrix(const CSRMatrix *mat) {
-    #pragma omp parallel for
-    for (int i = 0; i < mat->rows; i++) {
-        int row_start = mat->row_ptr[i];
-        int row_end = mat->row_ptr[i + 1];
-        #pragma omp critical
-        {
-            for (int j = row_start; j < row_end; j++) {
-                printf("value: %f, col_index: %d, row: %d\n", mat->values[j], mat->col_index[j], i);
-            }
-        }
-    }
+CSRMatrix createCSRMatrix(int nrows, int ncols, int nnz, int *row_ptr, int *col_ind, double *values) {
+    CSRMatrix matrix;
+    matrix.nrows = nrows;
+    matrix.ncols = ncols;
+    matrix.nnz = nnz;
+    matrix.row_ptr = row_ptr;
+    matrix.col_ind = col_ind;
+    matrix.values = values;
+    return matrix;
+}
 
-    printf("row_ptr:\n");
-    for (int i = 0; i <= mat->rows; i++) {
-        printf("row_ptr[%d]: %d\n", i, mat->row_ptr[i]);
+void printCSRMatrix(const CSRMatrix *matrix) {
+    printf("row_ptr: ");
+    for (int i = 0; i <= matrix->nrows; ++i) {
+        printf("%d ", matrix->row_ptr[i]);
     }
+    printf("\ncol_ind: ");
+    for (int i = 0; i < matrix->nnz; ++i) {
+        printf("%d ", matrix->col_ind[i]);
+    }
+    printf("\nvalues: ");
+    for (int i = 0; i < matrix->nnz; ++i) {
+        printf("%f ", matrix->values[i]);
+    }
+    printf("\n");
 }
 
 int main() {
-    srand(time(NULL));
+    // Ejemplo de matrices dispersas A y B en formato CSR
+    int row_ptr_A[] = {0, 2, 4};
+    int col_ind_A[] = {0, 1, 0, 1};
+    double values_A[] = {1.0, 2.0, 3.0, 4.0};
+    CSRMatrix A = createCSRMatrix(2, 2, 4, row_ptr_A, col_ind_A, values_A);
 
-    // Generar matrices A y B
-    CSRMatrix *A = create_csr_matrix(MATRIX_SIZE, MATRIX_SIZE, (int)(MATRIX_SIZE * MATRIX_SIZE * SPARSITY));
-    CSRMatrix *B = create_csr_matrix(MATRIX_SIZE, MATRIX_SIZE, (int)(MATRIX_SIZE * MATRIX_SIZE * SPARSITY));
+    int row_ptr_B[] = {0, 2, 4};
+    int col_ind_B[] = {0, 1, 0, 1};
+    double values_B[] = {5.0, 6.0, 7.0, 8.0};
+    CSRMatrix B = createCSRMatrix(2, 2, 4, row_ptr_B, col_ind_B, values_B);
 
-    generate_random_csr_matrix(A, SPARSITY);
-    generate_random_csr_matrix(B, SPARSITY);
+    // Multiplicar matrices A y B
+    CSRMatrix C = multiplyCSR(&A, &B);
 
-    // Multiplicar matrices
-    double start_time = omp_get_wtime();
-    CSRMatrix *C = multiply_csr_matrices(A, B);
-    double end_time = omp_get_wtime();
-
-    printf("Tiempo de multiplicación: %f segundos\n", end_time - start_time);
-
-    // Imprimir resultados de la matriz C de manera paralela
-    print_csr_matrix(C);
+    // Imprimir la matriz resultante
+    printCSRMatrix(&C);
 
     // Liberar memoria
-    free_csr_matrix(A);
-    free_csr_matrix(B);
-    free_csr_matrix(C);
+    free(C.row_ptr);
+    free(C.col_ind);
+    free(C.values);
 
     return 0;
 }
-
